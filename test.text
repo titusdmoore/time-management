@@ -1,0 +1,16 @@
+time:
+	- Start
+	- End?
+	- Date
+project
+task
+message
+
+[project : task] 
+  - [date:amount: start - end?] message 
+  - [date:amount: start - end?] message 
+  - [date:amount: start - end?] message 
+
+[project : task]
+  - [date:amount: start - end?] message 
+
