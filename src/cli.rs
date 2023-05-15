@@ -23,5 +23,22 @@ pub enum Commands {
         )]
         path: Option<PathBuf>,
     },
-    Track {},
+    Track {
+        project_task: String,
+        #[arg(
+            short = 'm',
+            long = "message",
+            value_name = "<MESSAGE>",
+            help = "Optional: Message to be associated with the tracked time."
+        )]
+        message: Option<String>,
+        // This is a string arg, TODO: implement a way to parse this into a time object
+        #[arg(
+            short = 'a',
+            long = "amount",
+            value_name = "<AMOUNT>",
+            help = "Optional: Amount of time to be tracked."
+        )]
+        amount: Option<String>,
+    },
 }

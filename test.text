@@ -20,3 +20,10 @@ message
       - [amount: start - end?] message
       - [amount: start - end?] message
       - [amount: start - end?] message
+
+Commands
+Track 
+tm track project/task -m "Message" -a 1:45
+
+Start tiemr
+tm project/task // This runs the timer in a holding state?

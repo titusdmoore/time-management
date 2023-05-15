@@ -32,12 +32,16 @@ impl Init {
     // I don't like this name
     pub fn run(&self) -> Result<()> {
         let root_path = home_dir().unwrap();
-        create_dir_all(root_path.join(".config/time_management"))?;
+        create_dir_all(root_path.join(".config/time-management"))?;
 
         if let Some(path) = &self.path {
-            create_dir_all(path.join("time_management"))?;
+            create_dir_all(path.join("time-management"))?;
 
-            match File::create(path.join("time_management").join("config.toml")) {
+            match File::create(
+                root_path
+                    .join(".config/time-management")
+                    .join("config.toml"),
+            ) {
                 Ok(mut file) => {
                     file.write_all(
                         format!("file_path = {}", path.display().to_string()).as_bytes(),
@@ -49,9 +53,6 @@ impl Init {
             }
         }
 
-        Err(std::io::Error::new(
-            std::io::ErrorKind::Other,
-            "Something went wrong initializing the config files.",
-        ))
+        Ok(())
     }
 }
