@@ -14,3 +14,9 @@ message
 [project : task]
   - [date:amount: start - end?] message 
 
+<FOLDER - Month>
+  <FILE - Day>
+    [project : task] 
+      - [amount: start - end?] message
+      - [amount: start - end?] message
+      - [amount: start - end?] message

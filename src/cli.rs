@@ -23,4 +23,5 @@ pub enum Commands {
         )]
         path: Option<PathBuf>,
     },
+    Track {},
 }
