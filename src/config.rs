@@ -3,6 +3,7 @@ use serde::Deserialize;
 use std::fs::read_to_string;
 use std::path::PathBuf;
 
+#[derive(Debug)]
 pub struct Config {
     pub config_path: Option<PathBuf>,
     pub work_path: Option<PathBuf>,
@@ -19,7 +20,7 @@ impl Config {
         let mut file_path: Option<PathBuf> = None;
 
         if let Some(mut home_path) = home_dir() {
-            home_path.push("time_management/config.toml");
+            home_path.push(".config/time-management/config.toml");
 
             if home_path.exists() {
                 let toml_config: TomlConfig =

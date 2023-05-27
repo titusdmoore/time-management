@@ -6,26 +6,29 @@ use std::{
     path::PathBuf,
 };
 
+use crate::config::Config;
+
 pub struct Init {
     pub path: Option<PathBuf>,
 }
 
 impl Init {
-    pub fn new(path: Option<PathBuf>) -> Self {
+    pub fn new(path: Option<PathBuf>, config: &mut Config) -> Self {
+        let mut init_obj = Self { path: None };
+
         match path {
-            Some(path) => Self { path: Some(path) },
+            Some(path) => init_obj.path = Some(path),
             None => {
                 if let Some(path) = home_dir() {
-                    return Self {
-                        path: Some(path.join(".local/share")),
-                    };
+                    init_obj.path = Some(path.join(".local/share"));
                 } else {
-                    return Self {
-                        path: Some(PathBuf::from("/usr/local/share")),
-                    };
+                    init_obj.path = Some(PathBuf::from("/usr/local/share"));
                 }
             }
         }
+
+        config.work_path = init_obj.path.clone();
+        return init_obj;
     }
     // I need to add a config file that has the path used, then I need to add a way for the path to
     // get set to a state obj that can be used by the other commands.
@@ -44,7 +47,7 @@ impl Init {
             ) {
                 Ok(mut file) => {
                     file.write_all(
-                        format!("file_path = {}", path.display().to_string()).as_bytes(),
+                        format!("file_path = \"{}\"", path.display().to_string()).as_bytes(),
                     )?;
                 }
                 Err(e) => {

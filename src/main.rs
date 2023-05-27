@@ -2,8 +2,10 @@ use clap::Parser;
 use time_management::cli::{Cli, Commands};
 use time_management::commands::init::Init;
 use time_management::commands::track;
+use time_management::config::Config;
 
 fn main() {
+    let mut config = Config::init();
     let cli = Cli::parse();
 
     if let Some(test) = cli.test.as_deref() {
@@ -13,7 +15,7 @@ fn main() {
     match &cli.commands {
         Some(commands) => match commands {
             Commands::Init { path } => {
-                let init_result = Init::new(path.clone()).run();
+                let init_result = Init::new(path.clone(), &mut config).run();
 
                 match init_result {
                     Ok(_) => {
@@ -34,7 +36,7 @@ fn main() {
                     message.clone(),
                     amount.clone().unwrap_or("0:0".to_string()),
                 )
-                .run();
+                .run(&config);
             }
         },
         None => {}

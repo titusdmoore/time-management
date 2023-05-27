@@ -1,3 +1,8 @@
+use crate::config::Config;
+use chrono::{Datelike, Local};
+
+use crate::utils::Months;
+
 pub struct Track {
     pub project: String,
     pub task: String,
@@ -13,16 +18,30 @@ impl Track {
             project: project_task[0].to_string(),
             task: project_task[1].to_string(),
             message,
-            amount: Track::parse_amount(amount),
+            amount: Track::to_raw_time(amount),
         }
     }
-    pub fn run(&self) {
-        println!("Project: {}", self.project);
-        println!("Task: {}", self.task);
-        println!("Message: {}", self.message.as_ref().unwrap());
-        println!("Amount: {}", self.amount);
+    pub fn run(&self, config: &Config) {
+        let now = Local::now().date_naive();
+        let month: String = Months::get_month(now.month() as usize).to_string();
+        let day = now.day().to_string();
+
+        if let Some(work_path) = &config.work_path {
+            println!(
+                "Work Path: {}",
+                work_path.join(format!("{}/{}.txt", month, day)).display()
+            );
+        }
+
+        println!(
+            "[{} : {}]\n\t- [{}] {}",
+            self.project,
+            self.task,
+            Track::to_string_time(self.amount),
+            self.message.as_ref().unwrap()
+        );
     }
-    pub fn parse_amount(amount: String) -> u32 {
+    pub fn to_raw_time(amount: String) -> u32 {
         let amount: Vec<&str> = amount.split(":").collect();
 
         let mut total_minutes: u32 = 0;
@@ -42,5 +61,12 @@ impl Track {
         }
 
         total_minutes
+    }
+
+    pub fn to_string_time(amount: u32) -> String {
+        let hours = amount / 60;
+        let minutes = amount % 60;
+
+        format!("{}:{}", hours, minutes)
     }
 }
