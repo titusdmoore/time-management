@@ -6,7 +6,7 @@ pub struct Entries {
     pub entries: Vec<Entry>,
 }
 
-struct Entry {
+pub struct Entry {
     amount: u32,
     message: Option<String>,
     start: Option<DateTime<Local>>,
