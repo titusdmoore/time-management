@@ -6,6 +6,7 @@ use std::{
 };
 
 use crate::time_log::TimeLog;
+use chrono::{DateTime, Local, TimeZone};
 
 pub struct Parser {
     path: PathBuf,
@@ -37,6 +38,7 @@ impl Parser {
                     // else clear vec and print error
                     // continue
                     println!("Reached end of entry: {:?}", raw_entry);
+                    TimeLog::try_parse(&raw_entry).unwrap();
                     raw_entry.clear();
                 }
             }
@@ -45,6 +47,7 @@ impl Parser {
             }
         }
 
+        println!("{:?}", Local::now());
         println!("Reached end of file: {:?}", raw_entry);
 
         Ok(self)

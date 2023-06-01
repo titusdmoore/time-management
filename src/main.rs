@@ -1,16 +1,18 @@
 use clap::Parser;
+use std::fs;
 use time_management::cli::{Cli, Commands};
 use time_management::commands::init::Init;
 use time_management::commands::track;
 use time_management::config::Config;
-use time_management::parser::Parser as TextParser;
+use time_management::entries::Entries;
 
 fn main() {
     let mut config = Config::init();
     if let Some(mut work_path) = config.work_path.clone() {
-        work_path.push("time-management/test.txt");
-        println!("Work path: {}", work_path.display());
-        let _ = TextParser::new(work_path).parse();
+        work_path.push("time-management/test.toml");
+        let entries_string = fs::read_to_string(work_path).unwrap();
+        let entries: Entries = toml::from_str(&entries_string).unwrap();
+        println!("{:?}", entries);
     }
     let cli = Cli::parse();
 

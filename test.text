@@ -27,3 +27,23 @@ tm track project/task -m "Message" -a 1:45
 
 Start tiemr
 tm project/task // This runs the timer in a holding state?
+
+
+[[entries]]
+project = "project1"
+task = "task1"
+amount = 140
+start = "2023-05-31T23:47:56.404011-04:00"
+message = "message1"
+
+[entries.entry2]
+project = "project2"
+task = "task2"
+amount = 120
+start = "2023-05-31T23:47:56.404011-04:00"
+
+[entries.entry3]
+project = "project3"
+task = "task3"
+amount = 40
+start = "2023-05-31T23:47:56.404011-04:00"
