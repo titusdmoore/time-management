@@ -1,5 +1,8 @@
+use crate::utils::Months;
+use chrono::{Datelike, Local};
 use dirs::home_dir;
 use serde::Deserialize;
+use std::fmt::format;
 use std::fs::read_to_string;
 use std::path::PathBuf;
 
@@ -35,5 +38,18 @@ impl Config {
             config_path: home,
             work_path: file_path,
         }
+    }
+    pub fn today_path(&self) -> Result<(PathBuf, String), ()> {
+        let now = Local::now().date_naive();
+        let month: String = Months::get_month(now.month() as usize).to_string();
+        let day = now.day().to_string();
+
+        if let Some(work_path) = &self.work_path {
+            return Ok((
+                work_path.join(format!("{}", month)),
+                format!("{}.toml", day),
+            ));
+        }
+        Err(())
     }
 }

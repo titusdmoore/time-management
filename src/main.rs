@@ -4,16 +4,10 @@ use time_management::cli::{Cli, Commands};
 use time_management::commands::init::Init;
 use time_management::commands::track;
 use time_management::config::Config;
-use time_management::entries::Entries;
+use time_management::time_log::{Entry, TimeLog};
 
 fn main() {
     let mut config = Config::init();
-    if let Some(mut work_path) = config.work_path.clone() {
-        work_path.push("time-management/test.toml");
-        let entries_string = fs::read_to_string(work_path).unwrap();
-        let entries: Entries = toml::from_str(&entries_string).unwrap();
-        println!("{:?}", entries);
-    }
     let cli = Cli::parse();
 
     if let Some(test) = cli.test.as_deref() {
@@ -39,12 +33,34 @@ fn main() {
                 message,
                 amount,
             } => {
-                let track = track::Track::new(
-                    project_task.clone(),
+                let (project, task) = Entry::parse_project_task(project_task.to_owned());
+                let mut parsed_amount = 0;
+                if let Some(string_amount) = amount {
+                    parsed_amount = Entry::to_raw_time(string_amount.to_owned());
+                }
+
+                let entry = Entry::new(
+                    project,
+                    task,
+                    parsed_amount,
+                    chrono::Local::now(),
+                    None,
                     message.clone(),
-                    amount.clone().unwrap_or("0:0".to_string()),
-                )
-                .run(&config);
+                );
+                let track = track::Track::new(&config, entry).run();
+            }
+            Commands::Report {
+                project,
+                task,
+                start,
+                end,
+            } => {
+                let (path, file) = config.today_path().unwrap();
+                let entries = TimeLog::from(path.join(file)).unwrap();
+                let total = entries.total_time();
+                println!("Total: {}", Entry::to_string_time(total));
+                println!("{:?}", entries);
+                println!("Report");
             }
         },
         None => {}

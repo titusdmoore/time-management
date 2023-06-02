@@ -1,121 +1,134 @@
 use chrono::{DateTime, Local};
+use serde::{Deserialize, Serialize};
+use std::path::PathBuf;
+use std::{fs, io::Error};
 
+#[derive(Debug, Serialize, Deserialize)]
 pub struct TimeLog {
-    pub project: Option<String>,
-    pub task: Option<String>,
     pub entries: Vec<Entry>,
 }
 
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Entry {
-    amount: u32,
-    message: Option<String>,
-    start: Option<DateTime<Local>>,
-    end: Option<DateTime<Local>>,
+    pub project: String,
+    pub task: Option<String>,
+    pub amount: u32,
+    pub start: DateTime<Local>,
+    pub end: Option<DateTime<Local>>,
+    pub message: Option<String>,
 }
 
 impl TimeLog {
-    pub fn new(project: Option<String>, task: Option<String>) -> Self {
+    pub fn new() -> Self {
         Self {
-            project,
-            task,
             entries: Vec::new(),
         }
     }
-    pub fn add_entry(
-        &mut self,
-        amount: u32,
-        message: Option<String>,
-        start: Option<DateTime<Local>>,
-        end: Option<DateTime<Local>>,
-    ) {
-        let entry = Entry {
-            amount,
-            message,
-            start,
-            end,
-        };
+
+    pub fn add_entry(&mut self, entry: Entry) {
         self.entries.push(entry);
     }
-    pub fn try_parse(raw_time_log: &Vec<String>) -> Result<TimeLog, ()> {
-        let mut time_log = Self::try_parse_time_log_string(&raw_time_log[0])?;
 
-        for line in raw_time_log.iter().skip(1) {
-            let mut val_vec: Vec<(usize, usize)> = Vec::new();
-            let ch_bytes = line.trim().as_bytes();
+    pub fn total_time(&self) -> u32 {
+        let mut total_time = 0;
 
-            // Set start to 1 to skip initial '-'
-            let mut i = 1;
-            while i < ch_bytes.len() {
-                println!("{:?}", ch_bytes[i] as char);
-                match ch_bytes[i] as char {
-                    '-' | '[' | ']' | ':' | '"' => {
-                        println!("in");
-                        let vec_len = val_vec.len();
-
-                        // This is inside of the amount, seperating the two numbers
-                        if vec_len == 1 {
-                            i += 1;
-                            continue;
-                        }
-
-                        if vec_len != 0 {
-                            println!("Pushing: {:?}", val_vec[vec_len - 1]);
-                            val_vec[vec_len - 1].1 = i - 1;
-                        }
-                        val_vec.push((i + 1, usize::MAX));
-
-                        i += 1;
-                        continue;
-                    }
-                    _ => {
-                        i += 1;
-                        continue;
-                    }
-                }
-            }
-            println!("{:?}", val_vec);
-
-            // for (start, end) in val_vec {
-            //     let val = &line[start..end];
-            //     println!("{}", val);
-            // }
+        for entry in &self.entries {
+            total_time += entry.amount;
         }
 
-        Ok(time_log)
+        total_time
     }
-    fn try_parse_time_log_string(raw_time_log: &String) -> Result<TimeLog, ()> {
-        let mut project = String::new();
-        let mut task: Option<String> = None;
-        let mut is_project = true;
 
-        for ch in raw_time_log.chars() {
-            if ch == '[' || ch == ' ' {
-                continue;
+    pub fn from(path: PathBuf) -> Result<Self, Error> {
+        let file_str = fs::read_to_string(path)?;
+        match toml::from_str(&file_str) {
+            Ok(time_log) => Ok(time_log),
+            Err(e) => {
+                println!("Error: Unable to parse time log file.\n{}", e);
+                return Err(Error::new(std::io::ErrorKind::Other, e));
             }
+        }
+    }
+}
 
-            if ch == ']' {
-                break;
-            }
+impl Entry {
+    pub fn new(
+        project: String,
+        task: Option<String>,
+        amount: u32,
+        start: DateTime<Local>,
+        end: Option<DateTime<Local>>,
+        message: Option<String>,
+    ) -> Self {
+        Self {
+            project,
+            task,
+            amount,
+            start,
+            end,
+            message,
+        }
+    }
 
-            if ch == ':' {
-                is_project = false;
-                continue;
-            }
+    pub fn to_log_string(&self) -> String {
+        let mut log_string = String::new();
 
-            if is_project {
-                project.push(ch);
-            } else {
-                match task.as_mut() {
-                    Some(t) => t.push(ch),
-                    None => task = Some(ch.to_string()),
+        log_string.push_str(&format!("[[entries]]\nproject = \"{}\"\n", &self.project));
+
+        if let Some(task) = &self.task {
+            log_string.push_str(&format!("task = \"{}\"\n", &task));
+        }
+
+        log_string.push_str(&format!("amount = {}\n", self.amount));
+
+        if let Some(message) = &self.message {
+            log_string.push_str(&format!("message = \"{}\"\n", &message));
+        }
+
+        log_string.push_str(&format!("start = \"{}\"\n", self.start));
+
+        return log_string;
+    }
+
+    pub fn to_string_time(amount: u32) -> String {
+        let hours = amount / 60;
+        let minutes = amount % 60;
+
+        format!("{}:{}", hours, minutes)
+    }
+
+    pub fn to_raw_time(amount: String) -> u32 {
+        let amount: Vec<&str> = amount.split(":").collect();
+
+        let mut total_minutes: u32 = 0;
+
+        for (i, time) in amount.iter().enumerate() {
+            let time: u32 = time.parse().unwrap();
+
+            match i {
+                0 => {
+                    total_minutes += time * 60;
                 }
+                1 => {
+                    total_minutes += time;
+                }
+                _ => {}
             }
         }
 
-        if project.is_empty() {
-            return Err(());
-        }
+        total_minutes
+    }
 
-        Ok(TimeLog::new(Some(project), task))
+    pub fn parse_project_task(input: String) -> (String, Option<String>) {
+        let input: Vec<&str> = input.split("/").collect();
+
+        let project = input[0].to_string();
+        let task = if input.len() > 1 {
+            Some(input[1].to_string())
+        } else {
+            None
+        };
+
+        (project, task)
     }
 }

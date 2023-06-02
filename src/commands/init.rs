@@ -17,12 +17,12 @@ impl Init {
         let mut init_obj = Self { path: None };
 
         match path {
-            Some(path) => init_obj.path = Some(path),
+            Some(path) => init_obj.path = Some(path.join("time-management")),
             None => {
                 if let Some(path) = home_dir() {
-                    init_obj.path = Some(path.join(".local/share"));
+                    init_obj.path = Some(path.join(".local/share/time-management"));
                 } else {
-                    init_obj.path = Some(PathBuf::from("/usr/local/share"));
+                    init_obj.path = Some(PathBuf::from("/usr/local/share/time-management"));
                 }
             }
         }
@@ -38,7 +38,7 @@ impl Init {
         create_dir_all(root_path.join(".config/time-management"))?;
 
         if let Some(path) = &self.path {
-            create_dir_all(path.join("time-management"))?;
+            create_dir_all(path)?;
 
             match File::create(
                 root_path

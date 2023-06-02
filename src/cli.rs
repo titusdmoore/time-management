@@ -41,4 +41,34 @@ pub enum Commands {
         )]
         amount: Option<String>,
     },
+    Report {
+        #[arg(
+            short = 'p',
+            long = "project",
+            value_name = "<PROJECT>",
+            help = "Optional: Project to report on."
+        )]
+        project: Option<String>,
+        #[arg(
+            short = 't',
+            long = "task",
+            value_name = "<TASK>",
+            help = "Optional: Task to report on."
+        )]
+        task: Option<String>,
+        #[arg(
+            short = 's',
+            long = "start",
+            value_name = "<START>",
+            help = "Optional: Start date to report on."
+        )]
+        start: Option<String>,
+        #[arg(
+            short = 'e',
+            long = "end",
+            value_name = "<END>",
+            help = "Optional: End date to report on."
+        )]
+        end: Option<String>,
+    },
 }
