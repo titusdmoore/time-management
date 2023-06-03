@@ -45,7 +45,7 @@ impl TimeLog {
             Ok(time_log) => Ok(time_log),
             Err(e) => {
                 println!("Error: Unable to parse time log file.\n{}", e);
-                return Err(Error::new(std::io::ErrorKind::Other, e));
+                Err(Error::new(std::io::ErrorKind::Other, e))
             }
         }
     }
@@ -87,7 +87,7 @@ impl Entry {
 
         log_string.push_str(&format!("start = \"{}\"\n", self.start));
 
-        return log_string;
+        log_string
     }
 
     pub fn to_string_time(amount: u32) -> String {
@@ -98,7 +98,7 @@ impl Entry {
     }
 
     pub fn to_raw_time(amount: String) -> u32 {
-        let amount: Vec<&str> = amount.split(":").collect();
+        let amount: Vec<&str> = amount.split(':').collect();
 
         let mut total_minutes: u32 = 0;
 
@@ -120,7 +120,7 @@ impl Entry {
     }
 
     pub fn parse_project_task(input: String) -> (String, Option<String>) {
-        let input: Vec<&str> = input.split("/").collect();
+        let input: Vec<&str> = input.split('/').collect();
 
         let project = input[0].to_string();
         let task = if input.len() > 1 {

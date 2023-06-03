@@ -2,7 +2,6 @@ use crate::utils::Months;
 use chrono::{Datelike, Local};
 use dirs::home_dir;
 use serde::Deserialize;
-use std::fmt::format;
 use std::fs::read_to_string;
 use std::path::PathBuf;
 

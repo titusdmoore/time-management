@@ -1,5 +1,4 @@
 use clap::Parser;
-use std::fs;
 use time_management::cli::{Cli, Commands};
 use time_management::commands::init::Init;
 use time_management::commands::track;
@@ -47,13 +46,13 @@ fn main() {
                     None,
                     message.clone(),
                 );
-                let track = track::Track::new(&config, entry).run();
+                track::Track::new(&config, entry).run();
             }
             Commands::Report {
-                project,
-                task,
-                start,
-                end,
+                project: _,
+                task: _,
+                start: _,
+                end: _,
             } => {
                 let (path, file) = config.today_path().unwrap();
                 let entries = TimeLog::from(path.join(file)).unwrap();

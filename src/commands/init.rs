@@ -28,7 +28,7 @@ impl Init {
         }
 
         config.work_path = init_obj.path.clone();
-        return init_obj;
+        init_obj
     }
     // I need to add a config file that has the path used, then I need to add a way for the path to
     // get set to a state obj that can be used by the other commands.
@@ -46,9 +46,7 @@ impl Init {
                     .join("config.toml"),
             ) {
                 Ok(mut file) => {
-                    file.write_all(
-                        format!("file_path = \"{}\"", path.display().to_string()).as_bytes(),
-                    )?;
+                    file.write_all(format!("file_path = \"{}\"", path.display()).as_bytes())?;
                 }
                 Err(e) => {
                     return Err(e);

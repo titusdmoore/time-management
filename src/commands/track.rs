@@ -1,7 +1,6 @@
 use crate::config::Config;
 use crate::time_log::Entry;
-use std::fs::OpenOptions;
-use std::fs::{self, File};
+use std::fs::{self, OpenOptions};
 use std::io::Write;
 use std::path::PathBuf;
 
@@ -22,6 +21,7 @@ impl Track {
             fs::create_dir_all(path).unwrap();
             let mut file = OpenOptions::new()
                 .write(true)
+                .create(true)
                 .append(true)
                 .open(path.join(file_name))
                 .unwrap();
