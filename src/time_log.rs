@@ -93,8 +93,13 @@ impl Entry {
     pub fn to_string_time(amount: u32) -> String {
         let hours = amount / 60;
         let minutes = amount % 60;
+        let mut minutes_str = minutes.to_string();
 
-        format!("{}:{}", hours, minutes)
+        if minutes < 10 {
+            minutes_str = format!("0{}", minutes);
+        }
+
+        format!("{}:{}", hours, minutes_str)
     }
 
     pub fn to_raw_time(amount: String) -> u32 {
