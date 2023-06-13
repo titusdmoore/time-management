@@ -1,3 +1,4 @@
+use crate::errors::Errors;
 use crate::utils::Months;
 use chrono::{Datelike, Local};
 use dirs::home_dir;
@@ -38,7 +39,26 @@ impl Config {
             work_path: file_path,
         }
     }
-    pub fn today_path(&self) -> Result<(PathBuf, String), ()> {
+
+    pub fn today_tuple(&self) -> Result<(u8, u8), Errors> {
+        let now = Local::now().date_naive();
+        let month = match now.month().try_into() {
+            Ok(month) => month,
+            Err(e) => {
+                return Err(Errors::TryFrom(e));
+            }
+        };
+        let day = match now.day().try_into() {
+            Ok(day) => day,
+            Err(e) => {
+                return Err(Errors::TryFrom(e));
+            }
+        };
+
+        Ok((month, day))
+    }
+
+    pub fn today_path(&self) -> Result<(PathBuf, String), Errors> {
         let now = Local::now().date_naive();
         let month: String = Months::get_month(now.month() as usize).to_string();
         let day = now.day().to_string();
@@ -49,6 +69,6 @@ impl Config {
                 format!("{}.toml", day),
             ));
         }
-        Err(())
+        Err(Errors::Error("No work path found".to_string()))
     }
 }

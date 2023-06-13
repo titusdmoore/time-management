@@ -1,6 +1,7 @@
 use clap::Parser;
 use time_management::cli::{Cli, Commands};
 use time_management::commands::init::Init;
+use time_management::commands::report;
 use time_management::commands::track;
 use time_management::config::Config;
 use time_management::time_log::{Entry, TimeLog};
@@ -49,17 +50,25 @@ fn main() {
                 track::Track::new(&config, entry).run();
             }
             Commands::Report {
-                project: _,
-                task: _,
-                start: _,
-                end: _,
+                project,
+                task,
+                start,
+                end,
             } => {
-                let (path, file) = config.today_path().unwrap();
-                let entries = TimeLog::from(path.join(file)).unwrap();
-                let total = entries.total_time();
+                let time_logs: Vec<TimeLog> =
+                    report::logs_from_range(&config, project, task, start, end);
+
+                let mut total: u32 = 0;
+
+                for time_log in time_logs {
+                    total += time_log.total_time();
+
+                    for entry in time_log.entries {
+                        println!("{}", entry.to_report_string());
+                    }
+                }
+
                 println!("Total: {}", Entry::to_string_time(total));
-                println!("{:?}", entries);
-                println!("Report");
             }
         },
         None => {}

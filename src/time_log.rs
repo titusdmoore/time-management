@@ -3,6 +3,8 @@ use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use std::{fs, io::Error};
 
+use crate::errors::Errors;
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct TimeLog {
     pub entries: Vec<Entry>,
@@ -39,13 +41,39 @@ impl TimeLog {
         total_time
     }
 
-    pub fn from(path: PathBuf) -> Result<Self, Error> {
-        let file_str = fs::read_to_string(path)?;
+    pub fn from(path: PathBuf) -> Result<Self, Errors> {
+        let file_str = Self::read_to_string_or_create(path)?;
+
+        // If file is empty, we may have just created it, we don't want this to error, so we do a
+        // sneaky check here.
+        if file_str.is_empty() {
+            return Ok(Self::new());
+        }
+
         match toml::from_str(&file_str) {
             Ok(time_log) => Ok(time_log),
             Err(e) => {
                 println!("Error: Unable to parse time log file.\n{}", e);
-                Err(Error::new(std::io::ErrorKind::Other, e))
+                Err(Errors::Error(format!(
+                    "Unable to parse syntax of time log: {}",
+                    e
+                )))
+            }
+        }
+    }
+
+    fn read_to_string_or_create(path: PathBuf) -> Result<String, Errors> {
+        match fs::read_to_string(&path) {
+            Ok(file_str) => Ok(file_str),
+            Err(e) => {
+                if e.kind() == std::io::ErrorKind::NotFound {
+                    match fs::write(&path, "[[entries]]") {
+                        Ok(_) => Ok("".to_string()),
+                        Err(e) => Err(Errors::Io(e)),
+                    }
+                } else {
+                    Err(Errors::Io(e))
+                }
             }
         }
     }
@@ -88,6 +116,16 @@ impl Entry {
         log_string.push_str(&format!("start = \"{}\"\n", self.start));
 
         log_string
+    }
+
+    pub fn to_report_string(&self) -> String {
+        format!(
+            "- [{}:{} - {}] {}",
+            self.project,
+            self.task.clone().unwrap_or("".to_string()),
+            Entry::to_string_time(self.amount),
+            self.message.clone().unwrap_or("".to_string())
+        )
     }
 
     pub fn to_string_time(amount: u32) -> String {
