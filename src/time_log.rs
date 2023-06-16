@@ -67,7 +67,7 @@ impl TimeLog {
             Ok(file_str) => Ok(file_str),
             Err(e) => {
                 if e.kind() == std::io::ErrorKind::NotFound {
-                    match fs::write(&path, "[[entries]]") {
+                    match fs::write(&path, "") {
                         Ok(_) => Ok("".to_string()),
                         Err(e) => Err(Errors::Io(e)),
                     }

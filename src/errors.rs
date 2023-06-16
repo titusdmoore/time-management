@@ -5,5 +5,6 @@ pub enum Errors {
     Io(std::io::Error),
     Parse(ParseIntError),
     TryFrom(TryFromIntError),
+    NotInitalized,
     Error(String),
 }
